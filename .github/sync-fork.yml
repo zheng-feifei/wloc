@@ -1,0 +1,24 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.SYNC_TOKEN }}
+
+      - name: Sync with upstream
+        uses: repo-sync/github-sync@v2
+        with:
+          source_repo: https://github.com/Yu9191/wloc.git
+          source_branch: main
+          destination_branch: main
+          github_token: ${{ secrets.SYNC_TOKEN }}
