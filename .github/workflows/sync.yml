@@ -38,6 +38,6 @@ jobs:
             # 如果你的仓库有冲突，使用 git merge 会进入编辑器。加上环境变量可强制使用默认信息
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git config user.name "github-actions[bot]"
-            git merge upstream/main --no-edit
+            git merge upstream/main --allow-unrelated-histories --no-edit 
             git push origin main
           fi
