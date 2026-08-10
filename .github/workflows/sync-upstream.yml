@@ -1,0 +1,45 @@
+name: Sync Upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+upstream_sync:
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Add upstream remote
+      run: git remote add upstream https://github.com/Yu9191/wloc.git
+
+    - name: Fetch upstream
+      run: git fetch upstream
+
+    - name: Merge upstream/main
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        MERGE_OUTPUT=$(git merge upstream/main --no-edit 2>&1)
+        MERGE_EXIT=$?
+        echo "$MERGE_OUTPUT"
+        if [ $MERGE_EXIT -eq 0 ]; then
+          echo "Merge succeeded without conflicts"
+        elif echo "$MERGE_OUTPUT" | grep -q "Already up to date"; then
+          echo "Already up to date, nothing to sync"
+          exit 0
+        else
+          echo "Merge had conflicts, resolving by keeping local .github/"
+          git checkout --ours .github/ 2>/dev/null || true
+          git add .github/ 2>/dev/null || true
+          git add -A
+          git commit -m "chore: sync upstream (resolved conflicts)"
+        fi
+
+    - name: Push to origin
+      run: git push origin main
